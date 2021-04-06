@@ -46,23 +46,27 @@ public class EmbeddedExecutor {
     private final CPULayout cpuLayout;
 
     public EmbeddedExecutor(TestResultCollector sink) {
-        this(sink, null);
+        this(sink, null, false);
     }
 
-    public EmbeddedExecutor(TestResultCollector sink, CPULayout cpuLayout) {
+    public EmbeddedExecutor(TestResultCollector sink, CPULayout cpuLayout, boolean useVirtualThreads) {
         this.sink = sink;
         this.cpuLayout = cpuLayout;
-        pool = Executors.newCachedThreadPool(new ThreadFactory() {
-            private final AtomicInteger id = new AtomicInteger();
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("jcstress-worker-" + id.incrementAndGet());
-                t.setDaemon(true);
-                return t;
-            }
-        });
+        if (useVirtualThreads) {
+            ThreadFactory factory = Thread.builder().daemon(true).virtual().name("jcstress-worker-").factory();
+            pool = Executors.newThreadExecutor(factory);
+        } else {
+            pool = Executors.newCachedThreadPool(new ThreadFactory() {
+                private final AtomicInteger id = new AtomicInteger();
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("jcstress-worker-" + id.incrementAndGet());
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+        }
     }
 
     public void submit(TestConfig config, List<Integer> acquiredCPUs) {

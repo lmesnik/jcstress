@@ -57,6 +57,7 @@ public class Options {
     private int cpuCount;
     private int heapPerFork;
     private int forks;
+    private boolean useVirtualThreads;
     private String mode;
     private SpinLoopStyle spinStyle;
     private String resultFile;
@@ -80,6 +81,9 @@ public class Options {
                 .withRequiredArg().ofType(String.class).describedAs("result file");
 
         OptionSpec<Boolean> list = parser.accepts("l", "List the available tests matching the requested settings.")
+                .withOptionalArg().ofType(Boolean.class).describedAs("bool");
+
+        OptionSpec<Boolean> useVirtualThreads = parser.accepts("vt", "Should use virtual threads.")
                 .withOptionalArg().ofType(Boolean.class).describedAs("bool");
 
         OptionSpec<String> testFilter = parser.accepts("t", "Regexp selector for tests.")
@@ -180,6 +184,8 @@ public class Options {
         } else {
             this.verbosity = new Verbosity(0);
         }
+
+        this.useVirtualThreads = orDefault(set.has(useVirtualThreads), false);
 
         int totalCpuCount = VMSupport.figureOutHotCPUs();
         cpuCount = orDefault(set.valueOf(cpus), totalCpuCount);
@@ -292,6 +298,10 @@ public class Options {
 
     public int getMaxStride() {
         return maxStride;
+    }
+
+    public boolean useVirtualThreads() {
+        return useVirtualThreads;
     }
 
     public String getResultDest() {

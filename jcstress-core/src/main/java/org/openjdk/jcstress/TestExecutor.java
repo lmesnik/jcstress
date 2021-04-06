@@ -67,7 +67,7 @@ public class TestExecutor {
 
     private final Map<String, VM> vmByToken;
 
-    public TestExecutor(int maxThreads, Verbosity verbosity, TestResultCollector sink, boolean possiblyForked) throws IOException {
+    public TestExecutor(int maxThreads, int batchSize, TestResultCollector sink, boolean possiblyForked, boolean useVirtualThreads) throws IOException {
         this.maxThreads = maxThreads;
         this.verbosity = verbosity;
         this.sink = sink;
@@ -86,7 +86,7 @@ public class TestExecutor {
                 vmByToken.get(token).recordResult(result);
             }
         }) : null;
-        embeddedExecutor = new EmbeddedExecutor(sink, cpuLayout);
+        embeddedExecutor = new EmbeddedExecutor(sink, cpuLayout, useVirtualThreads);
     }
 
     public void runAll(List<TestConfig> configs) {
