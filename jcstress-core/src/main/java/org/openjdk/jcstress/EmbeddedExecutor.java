@@ -53,8 +53,7 @@ public class EmbeddedExecutor {
         this.sink = sink;
         this.cpuLayout = cpuLayout;
         if (useVirtualThreads) {
-            ThreadFactory factory = Thread.builder().daemon(true).virtual().name("jcstress-worker-").factory();
-            pool = Executors.newThreadExecutor(factory);
+            pool = VirtualAPI.instance().getVirtualThreadPerTaskExecutor();
         } else {
             pool = Executors.newCachedThreadPool(new ThreadFactory() {
                 private final AtomicInteger id = new AtomicInteger();
